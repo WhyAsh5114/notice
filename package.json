@@ -49,6 +49,7 @@
 	},
 	"dependencies": {
 		"@capacitor/android": "^7.4.4",
-		"@capacitor/core": "^7.4.4"
+		"@capacitor/core": "^7.4.4",
+		"@capacitor/status-bar": "^7.0.3"
 	}
 }
