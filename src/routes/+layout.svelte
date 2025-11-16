@@ -1,6 +1,7 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
 	import { StatusBar, Style } from '@capacitor/status-bar';
+	import { Toaster } from "$lib/components/ui/sonner/index.js";
 	import { mode, ModeWatcher } from 'mode-watcher';
 	import '../app.css';
 
@@ -22,4 +23,7 @@
 </svelte:head>
 
 <ModeWatcher />
-{@render children()}
+<Toaster />
+<main class="flex h-screen flex-col items-center justify-center p-4">
+	{@render children()}
+</main>
