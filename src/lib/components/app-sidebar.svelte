@@ -71,7 +71,7 @@
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton
 									onclick={() => sidebar.setOpenMobile(false)}
-									isActive={page.url.pathname.startsWith(link.url)}
+									isActive={page.url.pathname === link.url}
 								>
 									{#snippet child({ props })}
 										<a href={link.url} {...props}>
