@@ -4,6 +4,10 @@ const config: CapacitorConfig = {
 	appId: 'com.whyash5114.notice',
 	appName: 'notice',
 	webDir: 'build',
+	server: {
+		url: 'http://localhost:5173',
+		cleartext: true
+	},
 	plugins: {
 		StatusBar: {
 			overlaysWebView: false

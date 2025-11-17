@@ -1,21 +1,38 @@
 <script lang="ts">
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Empty from '$lib/components/ui/empty/index.js';
-	import * as Item from '$lib/components/ui/item/index.js';
 	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
 	import { Spinner } from '$lib/components/ui/spinner/index.js';
+	import { BellDotIcon } from '@lucide/svelte';
 	import { type NotificationItem, NotificationReader } from 'capacitor-notification-reader';
 
-	let activeNotifications = $state<NotificationItem[]>();
+	let notifications = $state<NotificationItem[]>();
 
 	$effect(() => {
-		NotificationReader.getActiveNotifications().then(({ notifications }) => {
-			activeNotifications = notifications;
+		NotificationReader.getNotifications().then((res) => {
+			notifications = res.notifications;
 		});
 	});
+
+	$effect(() => {
+		const listener = NotificationReader.addListener(
+			'notificationPosted',
+			(info: NotificationItem) => (notifications = [info, ...(notifications ?? [])])
+		);
+
+		return async () => {
+			(await listener).remove();
+		};
+	});
+
+	function formatTimestamp(timestamp: number): string {
+		const date = new Date(timestamp);
+		return date.toLocaleString();
+	}
 </script>
 
-{#if activeNotifications === undefined}
+{#if notifications === undefined}
 	<Empty.Root class="w-full">
 		<Empty.Header>
 			<Empty.Media variant="icon">
@@ -25,11 +42,11 @@
 			<Empty.Description>Please wait while we load your notifications</Empty.Description>
 		</Empty.Header>
 	</Empty.Root>
-{:else if activeNotifications.length === 0}
+{:else if notifications.length === 0}
 	<Empty.Root class="w-full">
 		<Empty.Header>
 			<Empty.Media variant="icon">
-				<Spinner />
+				<BellDotIcon />
 			</Empty.Media>
 			<Empty.Title>No notifications yet</Empty.Title>
 			<Empty.Description>
@@ -38,24 +55,28 @@
 		</Empty.Header>
 	</Empty.Root>
 {:else}
-	<ScrollArea class="h-full">
-		<Item.Group>
-			{#each activeNotifications as notification, index (index)}
-				<Item.Root>
-					<Item.Media>
-						<Avatar.Root>
+	<ScrollArea class="h-full w-full">
+		<div class="flex flex-col gap-2 p-2">
+			{#each notifications.toReversed() as notification, index (index)}
+				<Card.Root class="gap-2">
+					<Card.Header class="flex flex-row items-start gap-3">
+						<Avatar.Root class="bg-muted p-2">
 							<Avatar.Image
 								src={`data:image/png;base64,${notification.largeIcon ?? notification.smallIcon ?? notification.appIcon}`}
 							/>
 							<Avatar.Fallback>{notification.app.charAt(0)}</Avatar.Fallback>
 						</Avatar.Root>
-					</Item.Media>
-					<Item.Content class="gap-1">
-						<Item.Title>{notification.title}</Item.Title>
-						<Item.Description>{notification.text}</Item.Description>
-					</Item.Content>
-				</Item.Root>
+						<div class="flex flex-col">
+							<Card.Title>{notification.app}</Card.Title>
+							<Card.Description>{formatTimestamp(notification.timestamp)}</Card.Description>
+						</div>
+					</Card.Header>
+					<Card.Content>
+						<p class="text-sm">{notification.title}</p>
+						<p class="text-xs">{notification.text}</p>
+					</Card.Content>
+				</Card.Root>
 			{/each}
-		</Item.Group>
+		</div>
 	</ScrollArea>
 {/if}
