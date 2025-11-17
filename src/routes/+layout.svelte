@@ -15,12 +15,17 @@
 	let { children } = $props();
 
 	function oklchToHex(oklchString: string): string {
-		const match = oklchString.match(/oklch\(([\d.]+)\s+([\d.]+)\s+([\d.]+)\)/);
-		if (!match) return '#000000';
+		const cleaned = oklchString.replace(/oklch\(|\)/g, '').trim();
+		const [l, c, h] = cleaned.split(/\s+/).map((val, index) => {
+			const num = parseFloat(val);
+			if (index === 0) return Math.max(0, Math.min(1, num)); // lightness
+			if (index === 1) return Math.max(0, Math.min(0.4, num)); // chroma
+			if (index === 2) return num % 360; // hue
+			return num;
+		});
 
-		const [, l, c, h] = match;
-		const color = oklch({ mode: 'oklch', l: parseFloat(l), c: parseFloat(c), h: parseFloat(h) });
-		return formatHex(color) || '#000000';
+		const oklchColor = { mode: 'oklch' as const, l, c, h: h || 0 };
+		return formatHex(oklchColor) || '#000000';
 	}
 
 	$effect(() => {

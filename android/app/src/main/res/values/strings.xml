@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">notice</string>
-    <string name="title_activity_main">notice</string>
+    <string name="app_name">Notice</string>
+    <string name="title_activity_main">Notice</string>
     <string name="package_name">com.whyash5114.notice</string>
     <string name="custom_url_scheme">com.whyash5114.notice</string>
 </resources>
