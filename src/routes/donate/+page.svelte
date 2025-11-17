@@ -76,7 +76,7 @@
 	<p>If you enjoy using the app, please leave a rating on the Google Play Store.</p>
 	<p>
 		<Button
-			href="https://play.google.com/store/apps/details?id=com.notice.app"
+			href="https://play.google.com/store/apps/details?id=com.whyash5114.notice"
 			target="_blank"
 			rel="noopener noreferrer"
 			size="lg"

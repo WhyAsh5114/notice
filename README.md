@@ -1,38 +1,103 @@
-# sv
+# Notice
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A clean, open-source notification history management app for Android.
 
-## Creating a project
+## Overview
 
-If you're seeing this, you've probably already done this step. Congrats!
+Notice is a simple and privacy-focused Android application that helps you manage and view your notification history. Built with transparency and user privacy in mind, Notice contains **no ads, no analytics, and no tracking** of any kind. The app doesn't even connect to the internet!
 
+## Features
+
+- 📱 Clean, intuitive notification history viewer
+- 🔒 Completely offline - no internet connection required
+- 🔓 100% open source and transparent
+- 🚫 No ads, no tracking, no analytics
+- 🎨 Built with modern web technologies (SvelteKit + Capacitor)
+
+## Why Notice?
+
+Existing notification management solutions are often filled with ads or don't work properly. Notice was created to provide a simple, reliable, and privacy-respecting alternative. Since notifications contain personal data, the app is completely open source so you can verify exactly how it works.
+
+## Tech Stack
+
+- **Framework**: SvelteKit 2
+- **UI Components**: Tailwind CSS, bits-ui
+- **Mobile**: Capacitor 7
+- **Language**: TypeScript
+- **Build Tool**: Vite
+
+## Development
+
+### Prerequisites
+
+- Node.js (v18 or higher recommended)
+- pnpm (preferred package manager)
+- Android Studio (for Android development)
+
+### Getting Started
+
+1. Clone the repository:
 ```sh
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+git clone https://github.com/whyash5114/notice.git
+cd notice
 ```
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
+2. Install dependencies:
 ```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+pnpm install
 ```
 
-## Building
-
-To create a production version of your app:
-
+3. Start the development server:
 ```sh
-npm run build
+pnpm dev
 ```
 
-You can preview the production build with `npm run preview`.
+4. Open the app in your browser or run on Android:
+```sh
+# Sync with Capacitor
+pnpm prepare
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+# Open in Android Studio
+npx cap open android
+```
+
+### Building
+
+To create a production build:
+
+```sh
+pnpm build
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Support the Project
+
+If you find Notice useful, consider supporting its development:
+
+- ☕ [Buy Me a Coffee](https://buymeacoffee.com/whyash5114)
+- ❤️ [Sponsor on GitHub](https://github.com/sponsors/whyash5114)
+- ⭐ [Star on GitHub](https://github.com/whyash5114/notice)
+- 📱 [Rate on Play Store](https://play.google.com/store/apps/details?id=com.notice.app)
+
+Your support helps keep this project maintained and improved!
+
+## Privacy
+
+Notice respects your privacy:
+- No internet connection required
+- No data collection or analytics
+- No third-party tracking
+- Your notifications stay on your device
+
+*Note: Optional cloud syncing/backup features may be added in the future, but will always be opt-in.*
+
+## License
+
+This project is open source. See the repository for license details.
+
+## Acknowledgments
+
+Built with modern web technologies and a focus on user privacy and transparency.
