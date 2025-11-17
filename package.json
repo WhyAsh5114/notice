@@ -24,6 +24,7 @@
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.1.17",
+		"@types/culori": "^4.0.1",
 		"@types/node": "^22.19.1",
 		"bits-ui": "^2.14.3",
 		"clsx": "^2.1.1",
@@ -51,6 +52,7 @@
 		"@capacitor/android": "^7.4.4",
 		"@capacitor/core": "^7.4.4",
 		"@capacitor/status-bar": "^7.0.3",
-		"capacitor-notification-reader": "link:../../Capacitor/capacitor-notification-reader"
+		"capacitor-notification-reader": "link:../../Capacitor/capacitor-notification-reader",
+		"culori": "^4.0.2"
 	}
 }

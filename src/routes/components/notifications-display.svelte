@@ -55,7 +55,7 @@
 		</Empty.Header>
 	</Empty.Root>
 {:else}
-	<ScrollArea class="h-full w-full">
+	<ScrollArea class="h-px grow w-full">
 		<div class="flex flex-col gap-2 p-2">
 			{#each notifications.toReversed() as notification, index (index)}
 				<Card.Root class="gap-2">
