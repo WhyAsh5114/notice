@@ -1,6 +1,6 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
-	import AppSidebar from '$lib/components/app-sidebar.svelte';
+	import AppSidebar from './components/sidebar/app-sidebar.svelte';
 	import CustomScrollArea from '$lib/components/ui/scroll-area/custom-scroll-area.svelte';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
@@ -10,7 +10,7 @@
 	import { StatusBar, Style } from '@capacitor/status-bar';
 	import { mode, ModeWatcher } from 'mode-watcher';
 	import '../app.css';
-	import LinkBreadcrumbs from './components/link-breadcrumbs.svelte';
+	import LinkBreadcrumbs from './components/sidebar/link-breadcrumbs.svelte';
 
 	let { children } = $props();
 

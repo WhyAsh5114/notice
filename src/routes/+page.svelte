@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { NotificationReader } from 'capacitor-notification-reader';
-	import CheckingPermissions from './components/checking-permissions.svelte';
-	import NotificationsDisplay from './components/notifications-display.svelte';
-	import RequestPermissions from './components/request-permissions.svelte';
+	import CheckingPermissions from './components/permissions/checking-permissions.svelte';
+	import NotificationsDisplay from './components/notifications-display/notifications-display.svelte';
+	import RequestPermissions from './components/permissions/request-permissions.svelte';
 
 	let permissionGranted = $state<boolean>();
 
