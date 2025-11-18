@@ -52,8 +52,11 @@
 	"dependencies": {
 		"@capacitor/android": "^7.4.4",
 		"@capacitor/core": "^7.4.4",
+		"@capacitor/filesystem": "^7.1.4",
+		"@capacitor/share": "^7.0.2",
 		"@capacitor/status-bar": "^7.0.3",
 		"capacitor-notification-reader": "link:../../Capacitor/capacitor-notification-reader",
-		"culori": "^4.0.2"
+		"culori": "^4.0.2",
+		"svelte-infinite": "^0.5.1"
 	}
 }

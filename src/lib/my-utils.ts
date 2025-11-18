@@ -1,4 +1,7 @@
+import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
+import { type NotificationItem, NotificationReader } from 'capacitor-notification-reader';
 import { formatHex } from 'culori';
+import { toast } from 'svelte-sonner';
 
 export function oklchToHex(oklchString: string): string {
 	const cleaned = oklchString.replace(/oklch\(|\)/g, '').trim();
@@ -14,130 +17,236 @@ export function oklchToHex(oklchString: string): string {
 	return formatHex(oklchColor) || '#000000';
 }
 
-export async function getAppropriateBackgroundColor(base64Image: string): Promise<string> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous'; // Enable CORS for canvas
-    
-    img.onload = () => {
-      try {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        
-        if (!ctx) {
-          resolve('#f5f5f5');
-          return;
-        }
+function notificationToCSVRow(notification: NotificationItem): string {
+	const escape = (str: string | undefined) => {
+		if (!str) return '';
+		return `"${str.replace(/"/g, '""')}"`;
+	};
 
-        // Use naturalWidth/naturalHeight to ensure we have the actual image dimensions
-        const w = img.naturalWidth || img.width;
-        const h = img.naturalHeight || img.height;
+	return [
+		escape(notification.id),
+		escape(notification.appName),
+		escape(notification.packageName),
+		escape(notification.title),
+		escape(notification.text),
+		notification.timestamp.toString(),
+		escape(notification.category),
+		escape(notification.style),
+		escape(notification.subText),
+		escape(notification.infoText),
+		escape(notification.summaryText),
+		escape(notification.group),
+		notification.isGroupSummary.toString(),
+		escape(notification.channelId),
+		notification.isOngoing.toString(),
+		notification.autoCancel.toString(),
+		notification.isLocalOnly.toString(),
+		notification.priority.toString(),
+		notification.number.toString()
+	].join(',');
+}
 
-        if (w === 0 || h === 0) {
-          resolve('#f5f5f5');
-          return;
-        }
+export async function exportNotifications(): Promise<void> {
+	try {
+		// Fetch all notifications
+		const allNotifications: NotificationItem[] = [];
+		let cursor: number | undefined;
+		let hasMore = true;
 
-        canvas.width = w;
-        canvas.height = h;
-        ctx.drawImage(img, 0, 0, w, h);
+		while (hasMore) {
+			const result = await NotificationReader.getNotifications({
+				cursor,
+				limit: 100
+			});
 
-        // Sample edge pixels
-        const edgePixels: number[][] = [];
+			if (result.notifications.length === 0) {
+				hasMore = false;
+			} else {
+				allNotifications.push(...result.notifications);
+				cursor = result.notifications[result.notifications.length - 1].timestamp;
+			}
+		}
 
-        // Top and bottom edges
-        for (let x = 0; x < w; x += Math.max(1, Math.floor(w / 20))) {
-          const topData = ctx.getImageData(x, 0, 1, 1).data;
-          const bottomData = ctx.getImageData(x, h - 1, 1, 1).data;
-          // Only include pixels with sufficient opacity (alpha > 50)
-          if (topData[3] > 50) {
-            edgePixels.push([topData[0], topData[1], topData[2]]);
-          }
-          if (bottomData[3] > 50) {
-            edgePixels.push([bottomData[0], bottomData[1], bottomData[2]]);
-          }
-        }
+		if (allNotifications.length === 0) {
+			toast.info('No notifications to export');
+			return;
+		}
 
-        // Left and right edges
-        for (let y = 0; y < h; y += Math.max(1, Math.floor(h / 20))) {
-          const leftData = ctx.getImageData(0, y, 1, 1).data;
-          const rightData = ctx.getImageData(w - 1, y, 1, 1).data;
-          // Only include pixels with sufficient opacity (alpha > 50)
-          if (leftData[3] > 50) {
-            edgePixels.push([leftData[0], leftData[1], leftData[2]]);
-          }
-          if (rightData[3] > 50) {
-            edgePixels.push([rightData[0], rightData[1], rightData[2]]);
-          }
-        }
+		// Create CSV content
+		const headers = [
+			'id',
+			'appName',
+			'packageName',
+			'title',
+			'text',
+			'timestamp',
+			'category',
+			'style',
+			'subText',
+			'infoText',
+			'summaryText',
+			'group',
+			'isGroupSummary',
+			'channelId',
+			'isOngoing',
+			'autoCancel',
+			'isLocalOnly',
+			'priority',
+			'number'
+		].join(',');
 
-        if (edgePixels.length === 0) {
-          // If no opaque edge pixels, sample the entire image for opaque pixels
-          const sampleSize = 5; // Sample every 5th pixel for better coverage
-          for (let y = 0; y < h; y += sampleSize) {
-            for (let x = 0; x < w; x += sampleSize) {
-              const pixelData = ctx.getImageData(x, y, 1, 1).data;
-              if (pixelData[3] > 50) {
-                edgePixels.push([pixelData[0], pixelData[1], pixelData[2]]);
-              }
-            }
-          }
-        }
+		const csvContent = [headers, ...allNotifications.map(notificationToCSVRow)].join('\n');
 
-        if (edgePixels.length === 0) {
-          // Completely transparent image - use a dark gray
-          resolve('#2a2a2a');
-          return;
-        }
+		// Save to file
+		const fileName = `notifications_export_${new Date().toISOString().replace(/[:.]/g, '-')}.csv`;
 
-        // Calculate average edge color
-        const avgR = edgePixels.reduce((sum, p) => sum + p[0], 0) / edgePixels.length;
-        const avgG = edgePixels.reduce((sum, p) => sum + p[1], 0) / edgePixels.length;
-        const avgB = edgePixels.reduce((sum, p) => sum + p[2], 0) / edgePixels.length;
+		await Filesystem.writeFile({
+			path: fileName,
+			data: csvContent,
+			directory: Directory.Documents,
+			encoding: Encoding.UTF8
+		});
 
-        // Calculate relative luminance
-        const luminance = (0.2126 * avgR + 0.7152 * avgG + 0.0722 * avgB) / 255;
+		toast.success(`Exported ${allNotifications.length} notifications`, {
+			description: `Documents/${fileName}`
+		});
+	} catch (error) {
+		toast.error('Failed to export notifications');
+		console.error(error);
+		throw error;
+	}
+}
 
-        // Check if the image is very light (white or near-white)
-        const isVeryLight = avgR > 240 && avgG > 240 && avgB > 240;
-        // Check if the image is very dark (black or near-black)
-        const isVeryDark = avgR < 15 && avgG < 15 && avgB < 15;
+function parseCSVLine(line: string): string[] {
+	const result: string[] = [];
+	let current = '';
+	let inQuotes = false;
 
-        let result: string;
+	for (let i = 0; i < line.length; i++) {
+		const char = line[i];
+		const nextChar = line[i + 1];
 
-        if (isVeryLight) {
-          // White/very light image - use dark gray background
-          result = '#2a2a2a';
-        } else if (isVeryDark) {
-          // Black/very dark image - use a light gray background for contrast
-          result = '#e5e5e5';
-        } else if (luminance < 0.5) {
-          // Dark image - create a light, tinted background
-          const lightenFactor = 0.88;
-          const r = Math.round(avgR + (255 - avgR) * lightenFactor);
-          const g = Math.round(avgG + (255 - avgG) * lightenFactor);
-          const b = Math.round(avgB + (255 - avgB) * lightenFactor);
-          result = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-        } else {
-          // Light image - create a dark, tinted background
-          const darkenFactor = 0.88;
-          const r = Math.round(avgR * (1 - darkenFactor));
-          const g = Math.round(avgG * (1 - darkenFactor));
-          const b = Math.round(avgB * (1 - darkenFactor));
-          result = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-        }
+		if (char === '"') {
+			if (inQuotes && nextChar === '"') {
+				current += '"';
+				i++; // Skip next quote
+			} else {
+				inQuotes = !inQuotes;
+			}
+		} else if (char === ',' && !inQuotes) {
+			result.push(current);
+			current = '';
+		} else {
+			current += char;
+		}
+	}
+	result.push(current);
 
-        resolve(result);
-      } catch (error) {
-        resolve('#f5f5f5');
-      }
-    };
+	return result;
+}
 
-    img.onerror = () => {
-      resolve('#f5f5f5');
-    };
+export async function importNotifications(): Promise<void> {
+	try {
+		// Read file - using a file input approach since Filesystem doesn't have a picker
+		const input = document.createElement('input');
+		input.type = 'file';
+		input.accept = '.csv';
 
-    const src = base64Image.startsWith('data:') ? base64Image : `data:image/png;base64,${base64Image}`;
-    img.src = src;
-  });
+		const filePromise = new Promise<File>((resolve, reject) => {
+			input.onchange = (e) => {
+				const file = (e.target as HTMLInputElement).files?.[0];
+				if (file) resolve(file);
+				else reject(new Error('No file selected'));
+			};
+			input.oncancel = () => reject(new Error('File selection cancelled'));
+		});
+
+		input.click();
+		const file = await filePromise;
+
+		// Read file content
+		const content = await file.text();
+		const lines = content.split('\n').filter((line) => line.trim());
+
+		if (lines.length < 2) {
+			toast.error('Invalid CSV file');
+			return;
+		}
+
+		// Skip header, parse rows
+		const notifications: NotificationItem[] = [];
+		for (let i = 1; i < lines.length; i++) {
+			try {
+				const values = parseCSVLine(lines[i]);
+				if (values.length >= 19) {
+					const notification: NotificationItem = {
+						id: values[0],
+						appName: values[1],
+						packageName: values[2],
+						title: values[3] || undefined,
+						text: values[4] || undefined,
+						timestamp: parseInt(values[5]),
+						category: values[6] || undefined,
+						style: values[7] as any,
+						subText: values[8] || undefined,
+						infoText: values[9] || undefined,
+						summaryText: values[10] || undefined,
+						group: values[11] || undefined,
+						isGroupSummary: values[12] === 'true',
+						channelId: values[13] || undefined,
+						actions: [],
+						isOngoing: values[14] === 'true',
+						autoCancel: values[15] === 'true',
+						isLocalOnly: values[16] === 'true',
+						priority: parseInt(values[17]),
+						number: parseInt(values[18])
+					} as NotificationItem;
+
+					notifications.push(notification);
+				}
+			} catch (error) {
+				console.error(`Error parsing line ${i}:`, error);
+			}
+		}
+
+		if (notifications.length === 0) {
+			toast.error('No valid notifications found in file');
+			return;
+		}
+
+		// Import notifications
+		await NotificationReader.importNotifications({ notifications });
+		toast.success(`Imported ${notifications.length} notifications`);
+	} catch (error: any) {
+		if (error.message !== 'File selection cancelled') {
+			toast.error('Failed to import notifications');
+			console.error(error);
+			throw error;
+		}
+	}
+}
+
+export async function deleteAllNotifications(): Promise<void> {
+	try {
+		await NotificationReader.deleteAllNotifications();
+		toast.success('All notifications deleted');
+	} catch (error) {
+		toast.error('Failed to delete notifications');
+		console.error(error);
+		throw error;
+	}
+}
+
+export function formatTimestamp(timestamp: number): string {
+	const date = new Date(timestamp);
+	return date.toLocaleTimeString();
+}
+
+export function isPreviousNotificationDifferentDate(
+	previousNotification: NotificationItem,
+	currentNotification: NotificationItem
+): boolean {
+	const currentDate = new Date(currentNotification.timestamp).toDateString();
+	const previousDate = new Date(previousNotification.timestamp).toDateString();
+	return currentDate !== previousDate;
 }
