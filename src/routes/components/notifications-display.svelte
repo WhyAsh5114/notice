@@ -4,10 +4,13 @@
 	import * as Empty from '$lib/components/ui/empty/index.js';
 	import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
 	import { Spinner } from '$lib/components/ui/spinner/index.js';
+	import { getAppropriateBackgroundColor } from '$lib/my-utils';
 	import { BellDotIcon } from '@lucide/svelte';
 	import { type NotificationItem, NotificationReader } from 'capacitor-notification-reader';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	let notifications = $state<NotificationItem[]>();
+	let backgroundColors = new SvelteMap<number, string>();
 
 	$effect(() => {
 		NotificationReader.getNotifications().then((res) => {
@@ -24,6 +27,21 @@
 		return async () => {
 			(await listener).remove();
 		};
+	});
+
+	$effect(() => {
+		if (!notifications) return;
+
+		notifications.forEach((notification, index) => {
+			if (!backgroundColors.has(index)) {
+				const imageData = notification.largeIcon ?? notification.smallIcon ?? notification.appIcon;
+				if (imageData) {
+					getAppropriateBackgroundColor(imageData).then((bgColor) => {
+						backgroundColors.set(index, bgColor);
+					});
+				}
+			}
+		});
 	});
 
 	function formatTimestamp(timestamp: number): string {
@@ -55,19 +73,20 @@
 		</Empty.Header>
 	</Empty.Root>
 {:else}
-	<ScrollArea class="h-px grow w-full">
+	<ScrollArea class="h-px w-full grow">
 		<div class="flex flex-col gap-2 p-2">
-			{#each notifications.toReversed() as notification, index (index)}
+			{#each notifications as notification, index (index)}
+				{@const bgColor = backgroundColors.get(notifications.length - 1 - index) ?? '#f5f5f5'}
 				<Card.Root class="gap-2">
 					<Card.Header class="flex flex-row items-start gap-3">
-						<Avatar.Root class="bg-muted p-2">
+						<Avatar.Root class="rounded-md p-1.5" style="background-color: {bgColor}">
 							<Avatar.Image
 								src={`data:image/png;base64,${notification.largeIcon ?? notification.smallIcon ?? notification.appIcon}`}
 							/>
-							<Avatar.Fallback>{notification.app.charAt(0)}</Avatar.Fallback>
+							<Avatar.Fallback>{notification.appName.charAt(0)}</Avatar.Fallback>
 						</Avatar.Root>
 						<div class="flex flex-col">
-							<Card.Title>{notification.app}</Card.Title>
+							<Card.Title>{notification.appName}</Card.Title>
 							<Card.Description>{formatTimestamp(notification.timestamp)}</Card.Description>
 						</div>
 					</Card.Header>

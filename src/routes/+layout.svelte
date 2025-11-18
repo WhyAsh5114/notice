@@ -5,28 +5,14 @@
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
+	import { oklchToHex } from '$lib/my-utils';
+	import { Capacitor } from '@capacitor/core';
 	import { StatusBar, Style } from '@capacitor/status-bar';
-	import { formatHex, oklch } from 'culori';
 	import { mode, ModeWatcher } from 'mode-watcher';
 	import '../app.css';
 	import LinkBreadcrumbs from './components/link-breadcrumbs.svelte';
-	import { Capacitor } from '@capacitor/core';
 
 	let { children } = $props();
-
-	function oklchToHex(oklchString: string): string {
-		const cleaned = oklchString.replace(/oklch\(|\)/g, '').trim();
-		const [l, c, h] = cleaned.split(/\s+/).map((val, index) => {
-			const num = parseFloat(val);
-			if (index === 0) return Math.max(0, Math.min(1, num)); // lightness
-			if (index === 1) return Math.max(0, Math.min(0.4, num)); // chroma
-			if (index === 2) return num % 360; // hue
-			return num;
-		});
-
-		const oklchColor = { mode: 'oklch' as const, l, c, h: h || 0 };
-		return formatHex(oklchColor) || '#000000';
-	}
 
 	$effect(() => {
 		if (!mode.current) return;
