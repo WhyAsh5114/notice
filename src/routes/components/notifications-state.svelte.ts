@@ -1,23 +1,42 @@
 import { goto } from '$app/navigation';
+import { page } from '$app/state';
 import { Capacitor } from '@capacitor/core';
-import { NotificationReader, type NotificationItem } from 'capacitor-notification-reader';
+import {
+	NotificationCategory,
+	NotificationReader,
+	NotificationStyle,
+	type NotificationItem
+} from 'capacitor-notification-reader';
+import { untrack } from 'svelte';
 import { LoaderState } from 'svelte-infinite';
 
 export const LOAD_LIMIT = 50;
 export type NotificationFilters = {
 	apps?: string[];
 	searchText?: string;
+	titleSearch?: string;
+	packageName?: string;
+	category?: NotificationCategory | string;
+	style?: NotificationStyle | string;
+	isOngoing?: boolean;
+	isGroupSummary?: boolean;
+	channelId?: string;
+	beforeTimestamp?: number;
+	afterTimestamp?: number;
 };
 
 class NotificationsState {
 	notifications = $state<NotificationItem[]>();
 	loaderState = new LoaderState();
-	filters: NotificationFilters = {};
+	filters: NotificationFilters = $state({});
 
 	constructor() {
 		if (!Capacitor.isNativePlatform()) {
 			return;
 		}
+
+		// Initialize filters from URL params
+		this.loadFiltersFromUrl();
 
 		this.loadInitial();
 
@@ -27,14 +46,40 @@ class NotificationsState {
 		);
 	}
 
+	loadFiltersFromUrl = () => {
+		const params = page.url.searchParams;
+
+		this.filters = {
+			apps: params.get('apps')?.split(',').filter(Boolean),
+			searchText: params.get('search') || undefined,
+			titleSearch: params.get('titleSearch') || undefined,
+			packageName: params.get('packageName') || undefined,
+			category: params.get('category') || undefined,
+			style: params.get('style') || undefined,
+			isOngoing:
+				params.get('isOngoing') === 'true'
+					? true
+					: params.get('isOngoing') === 'false'
+						? false
+						: undefined,
+			isGroupSummary:
+				params.get('isGroupSummary') === 'true'
+					? true
+					: params.get('isGroupSummary') === 'false'
+						? false
+						: undefined,
+			channelId: params.get('channelId') || undefined,
+			beforeTimestamp: params.get('beforeTimestamp') ? Number(params.get('beforeTimestamp')) : undefined,
+			afterTimestamp: params.get('afterTimestamp') ? Number(params.get('afterTimestamp')) : undefined
+		};
+	};
+
 	loadInitial = async () => {
+		console.log('ran');
 		try {
 			const res = await NotificationReader.getNotifications({
 				limit: LOAD_LIMIT,
-				filter: {
-					textContainsInsensitive: this.filters.searchText,
-					appNames: this.filters.apps
-				}
+				filter: untrack(() => this.buildFilterObject())
 			});
 			this.notifications = res.notifications;
 			this.loaderState.loaded();
@@ -56,10 +101,7 @@ class NotificationsState {
 			const res = await NotificationReader.getNotifications({
 				cursor,
 				limit: LOAD_LIMIT,
-				filter: {
-					textContainsInsensitive: this.filters.searchText,
-					appNames: this.filters.apps
-				}
+				filter: this.buildFilterObject()
 			});
 
 			if (res.notifications.length === 0) {
@@ -74,23 +116,101 @@ class NotificationsState {
 		}
 	};
 
+	buildFilterObject = () => {
+		const filter: any = {};
+
+		if (this.filters.searchText) {
+			filter.textContainsInsensitive = this.filters.searchText;
+		}
+		if (this.filters.titleSearch) {
+			filter.titleContainsInsensitive = this.filters.titleSearch;
+		}
+		if (this.filters.apps && this.filters.apps.length > 0) {
+			filter.appNames = this.filters.apps;
+		}
+		if (this.filters.packageName) {
+			filter.packageName = this.filters.packageName;
+		}
+		if (this.filters.category) {
+			filter.category = this.filters.category;
+		}
+		if (this.filters.style) {
+			filter.style = this.filters.style;
+		}
+		if (this.filters.isOngoing !== undefined) {
+			filter.isOngoing = this.filters.isOngoing;
+		}
+		if (this.filters.isGroupSummary !== undefined) {
+			filter.isGroupSummary = this.filters.isGroupSummary;
+		}
+		if (this.filters.channelId) {
+			filter.channelId = this.filters.channelId;
+		}
+		if (this.filters.beforeTimestamp) {
+			filter.beforeTimestamp = this.filters.beforeTimestamp;
+		}
+		if (this.filters.afterTimestamp) {
+			filter.afterTimestamp = this.filters.afterTimestamp;
+		}
+
+		return filter;
+	};
+
 	applyFilters = () => {
 		const url = new URL(window.location.href);
-		const params = url.searchParams;
+		const params = new URLSearchParams();
 
 		if (this.filters.apps && this.filters.apps.length > 0) {
 			params.set('apps', this.filters.apps.join(','));
-		} else {
-			params.delete('apps');
 		}
 
 		if (this.filters.searchText && this.filters.searchText.trim() !== '') {
 			params.set('search', this.filters.searchText.trim());
-		} else {
-			params.delete('search');
 		}
 
-		goto(`/?${params.toString()}`);
+		if (this.filters.titleSearch && this.filters.titleSearch.trim() !== '') {
+			params.set('titleSearch', this.filters.titleSearch.trim());
+		}
+
+		if (this.filters.packageName && this.filters.packageName.trim() !== '') {
+			params.set('packageName', this.filters.packageName.trim());
+		}
+
+		if (this.filters.category) {
+			params.set('category', this.filters.category);
+		}
+
+		if (this.filters.style) {
+			params.set('style', this.filters.style);
+		}
+
+		if (this.filters.isOngoing !== undefined) {
+			params.set('isOngoing', this.filters.isOngoing.toString());
+		}
+
+		if (this.filters.isGroupSummary !== undefined) {
+			params.set('isGroupSummary', this.filters.isGroupSummary.toString());
+		}
+
+		if (this.filters.channelId && this.filters.channelId.trim() !== '') {
+			params.set('channelId', this.filters.channelId.trim());
+		}
+
+		if (this.filters.beforeTimestamp) {
+			params.set('beforeTimestamp', this.filters.beforeTimestamp.toString());
+		}
+
+		if (this.filters.afterTimestamp) {
+			params.set('afterTimestamp', this.filters.afterTimestamp.toString());
+		}
+
+		const queryString = params.toString();
+		goto(queryString ? `/?${queryString}` : '/');
+	};
+
+	clearFilters = () => {
+		this.filters = {};
+		goto('/');
 	};
 }
 
