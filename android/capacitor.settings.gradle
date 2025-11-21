@@ -12,4 +12,4 @@ include ':capacitor-status-bar'
 project(':capacitor-status-bar').projectDir = new File('../node_modules/.pnpm/@capacitor+status-bar@7.0.3_@capacitor+core@7.4.4/node_modules/@capacitor/status-bar/android')
 
 include ':capacitor-notification-reader'
-project(':capacitor-notification-reader').projectDir = new File('../../../Capacitor/capacitor-notification-reader/android')
+project(':capacitor-notification-reader').projectDir = new File('../node_modules/.pnpm/capacitor-notification-reader@1.0.0_@capacitor+core@7.4.4/node_modules/capacitor-notification-reader/android')

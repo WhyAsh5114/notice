@@ -24,8 +24,8 @@ importers:
         specifier: ^7.0.3
         version: 7.0.3(@capacitor/core@7.4.4)
       capacitor-notification-reader:
-        specifier: link:../../Capacitor/capacitor-notification-reader
-        version: link:../../Capacitor/capacitor-notification-reader
+        specifier: ^1.0.0
+        version: 1.0.0(@capacitor/core@7.4.4)
       culori:
         specifier: ^4.0.2
         version: 4.0.2
@@ -1100,6 +1100,12 @@ packages:
   camelcase@5.3.1:
     resolution: {integrity: sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==}
     engines: {node: '>=6'}
+
+  capacitor-notification-reader@1.0.0:
+    resolution: {integrity: sha512-bxIe7dV3idmKu/nz4wBz8UCAF7ka4ya2YXG1gbPdEyBM3QP2WJ5u6CWg/weHiXh9AAL5FZbnotG5WGn2caN/Cg==}
+    engines: {node: '>=16.0.0'}
+    peerDependencies:
+      '@capacitor/core': '>=7.0.0'
 
   chalk@2.4.2:
     resolution: {integrity: sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==}
@@ -4105,6 +4111,10 @@ snapshots:
       quick-lru: 4.0.1
 
   camelcase@5.3.1: {}
+
+  capacitor-notification-reader@1.0.0(@capacitor/core@7.4.4):
+    dependencies:
+      '@capacitor/core': 7.4.4
 
   chalk@2.4.2:
     dependencies:
