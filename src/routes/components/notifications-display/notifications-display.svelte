@@ -9,6 +9,7 @@
 	import { formatTimestamp, isPreviousNotificationDifferentDate } from '$lib/my-utils';
 	import { FunnelIcon } from '@lucide/svelte';
 	import SearchIcon from '@lucide/svelte/icons/search';
+	import { NotificationStyle } from 'capacitor-notification-reader';
 	import { InfiniteLoader } from 'svelte-infinite';
 	import { notificationsState } from '../notifications-state.svelte';
 	import FiltersSheet from './filters-sheet.svelte';
@@ -26,7 +27,7 @@
 	}
 
 	$effect(() => {
-		const searchParams = page.url.searchParams;
+		page.url.searchParams;
 		notificationsState.notifications = undefined;
 		notificationsState.loaderState.reset();
 		notificationsState.loadInitial();
@@ -73,6 +74,13 @@
 					<Card.Content>
 						<p class="text-sm">{notification.title}</p>
 						<p class="text-xs">{notification.text}</p>
+						{#if notification.style === NotificationStyle.BIG_PICTURE}
+							<img
+								src={`data:image/png;base64,${notification.bigPicture}`}
+								alt="Notification media"
+								class="mt-2"
+							/>
+						{/if}
 					</Card.Content>
 				</Card.Root>
 			{:else}
