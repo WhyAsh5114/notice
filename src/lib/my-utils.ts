@@ -79,7 +79,7 @@ export async function exportNotifications(
 			} else {
 				allNotifications.push(...result.notifications);
 				cursor = result.notifications[result.notifications.length - 1].timestamp;
-				
+
 				// Report progress
 				if (onProgressUpdate) {
 					onProgressUpdate(allNotifications.length, totalCount);
@@ -157,7 +157,7 @@ export async function importNotifications(): Promise<void> {
 
 		// Read file content
 		const content = await file.text();
-		
+
 		// Parse CSV using Papa Parse
 		const parsed = Papa.parse<string[]>(content, {
 			skipEmptyLines: true
@@ -177,12 +177,7 @@ export async function importNotifications(): Promise<void> {
 		for (let i = 1; i < parsed.data.length; i++) {
 			try {
 				const values = parsed.data[i];
-				
-				// Detailed logging for first few rows
-				if (i <= 3) {
-					console.log(`Row ${i} fields:`, values.length, values);
-				}
-				
+
 				if (values.length >= 20) {
 					const notification: NotificationItem = {
 						id: values[0],
@@ -212,11 +207,6 @@ export async function importNotifications(): Promise<void> {
 					} as NotificationItem;
 
 					notifications.push(notification);
-					
-					// Log first notification object
-					if (i === 1) {
-						console.log('First notification object:', notification);
-					}
 				} else {
 					console.warn(`Row ${i} has insufficient fields (${values.length}/20)`, values);
 				}
@@ -230,17 +220,13 @@ export async function importNotifications(): Promise<void> {
 			return;
 		}
 
-		// Log for debugging
-		console.log('Importing notifications:', notifications.length);
-		console.log('First notification:', notifications[0]);
-		console.log('Last notification:', notifications[notifications.length - 1]);
-
 		// Import notifications
-		const importToast = toast.loading(`Importing ${notifications.length} notifications...`);
+		const importToast = toast.loading(`Importing ${notifications.length} notifications...`, {
+			description: 'The import will happen in the background, please wait'
+		});
 		await NotificationReader.importNotifications({ notifications });
 		toast.dismiss(importToast);
-		
-		console.log('Import completed successfully');
+
 		toast.success(`Imported ${notifications.length} notifications`);
 	} catch (error: any) {
 		if (error.message !== 'File selection cancelled') {

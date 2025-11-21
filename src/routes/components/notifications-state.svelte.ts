@@ -75,7 +75,6 @@ class NotificationsState {
 	};
 
 	loadInitial = async () => {
-		console.log('ran');
 		try {
 			const res = await NotificationReader.getNotifications({
 				limit: LOAD_LIMIT,
