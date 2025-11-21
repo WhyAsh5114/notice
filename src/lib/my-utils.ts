@@ -1,6 +1,7 @@
 import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
 import { type NotificationItem, NotificationReader } from 'capacitor-notification-reader';
 import { formatHex } from 'culori';
+import Papa from 'papaparse';
 import { toast } from 'svelte-sonner';
 
 export function oklchToHex(oklchString: string): string {
@@ -42,12 +43,26 @@ function notificationToCSVRow(notification: NotificationItem): string {
 		notification.autoCancel.toString(),
 		notification.isLocalOnly.toString(),
 		notification.priority.toString(),
-		notification.number.toString()
+		notification.number.toString(),
+		escape(notification.appIcon),
+		escape(notification.smallIcon),
+		escape(notification.largeIcon),
+		escape((notification as any).bigPicture)
 	].join(',');
 }
 
-export async function exportNotifications(): Promise<void> {
+export async function exportNotifications(
+	onProgressUpdate?: (current: number, total: number) => void
+): Promise<void> {
 	try {
+		// Get total count first
+		const { count: totalCount } = await NotificationReader.getTotalCount();
+
+		if (totalCount === 0) {
+			toast.info('No notifications to export');
+			return;
+		}
+
 		// Fetch all notifications
 		const allNotifications: NotificationItem[] = [];
 		let cursor: number | undefined;
@@ -64,12 +79,12 @@ export async function exportNotifications(): Promise<void> {
 			} else {
 				allNotifications.push(...result.notifications);
 				cursor = result.notifications[result.notifications.length - 1].timestamp;
+				
+				// Report progress
+				if (onProgressUpdate) {
+					onProgressUpdate(allNotifications.length, totalCount);
+				}
 			}
-		}
-
-		if (allNotifications.length === 0) {
-			toast.info('No notifications to export');
-			return;
 		}
 
 		// Create CSV content
@@ -92,7 +107,11 @@ export async function exportNotifications(): Promise<void> {
 			'autoCancel',
 			'isLocalOnly',
 			'priority',
-			'number'
+			'number',
+			'appIcon',
+			'smallIcon',
+			'largeIcon',
+			'bigPicture'
 		].join(',');
 
 		const csvContent = [headers, ...allNotifications.map(notificationToCSVRow)].join('\n');
@@ -117,40 +136,12 @@ export async function exportNotifications(): Promise<void> {
 	}
 }
 
-function parseCSVLine(line: string): string[] {
-	const result: string[] = [];
-	let current = '';
-	let inQuotes = false;
-
-	for (let i = 0; i < line.length; i++) {
-		const char = line[i];
-		const nextChar = line[i + 1];
-
-		if (char === '"') {
-			if (inQuotes && nextChar === '"') {
-				current += '"';
-				i++; // Skip next quote
-			} else {
-				inQuotes = !inQuotes;
-			}
-		} else if (char === ',' && !inQuotes) {
-			result.push(current);
-			current = '';
-		} else {
-			current += char;
-		}
-	}
-	result.push(current);
-
-	return result;
-}
-
 export async function importNotifications(): Promise<void> {
 	try {
 		// Read file - using a file input approach since Filesystem doesn't have a picker
 		const input = document.createElement('input');
 		input.type = 'file';
-		input.accept = '.csv';
+		input.accept = 'text/csv,.csv';
 
 		const filePromise = new Promise<File>((resolve, reject) => {
 			input.onchange = (e) => {
@@ -166,19 +157,33 @@ export async function importNotifications(): Promise<void> {
 
 		// Read file content
 		const content = await file.text();
-		const lines = content.split('\n').filter((line) => line.trim());
+		
+		// Parse CSV using Papa Parse
+		const parsed = Papa.parse<string[]>(content, {
+			skipEmptyLines: true
+		});
 
-		if (lines.length < 2) {
+		if (parsed.errors.length > 0) {
+			console.error('CSV parsing errors:', parsed.errors);
+		}
+
+		if (parsed.data.length < 2) {
 			toast.error('Invalid CSV file');
 			return;
 		}
 
 		// Skip header, parse rows
 		const notifications: NotificationItem[] = [];
-		for (let i = 1; i < lines.length; i++) {
+		for (let i = 1; i < parsed.data.length; i++) {
 			try {
-				const values = parseCSVLine(lines[i]);
-				if (values.length >= 19) {
+				const values = parsed.data[i];
+				
+				// Detailed logging for first few rows
+				if (i <= 3) {
+					console.log(`Row ${i} fields:`, values.length, values);
+				}
+				
+				if (values.length >= 20) {
 					const notification: NotificationItem = {
 						id: values[0],
 						appName: values[1],
@@ -198,14 +203,25 @@ export async function importNotifications(): Promise<void> {
 						isOngoing: values[14] === 'true',
 						autoCancel: values[15] === 'true',
 						isLocalOnly: values[16] === 'true',
-						priority: parseInt(values[17]),
-						number: parseInt(values[18])
+						priority: parseInt(values[17]) || 0,
+						number: parseInt(values[18]) || 0,
+						appIcon: values[19] || undefined,
+						smallIcon: values[20] || undefined,
+						largeIcon: values[21] || undefined,
+						bigPicture: values[22] || undefined
 					} as NotificationItem;
 
 					notifications.push(notification);
+					
+					// Log first notification object
+					if (i === 1) {
+						console.log('First notification object:', notification);
+					}
+				} else {
+					console.warn(`Row ${i} has insufficient fields (${values.length}/20)`, values);
 				}
 			} catch (error) {
-				console.error(`Error parsing line ${i}:`, error);
+				console.error(`Error parsing row ${i}:`, error);
 			}
 		}
 
@@ -214,8 +230,17 @@ export async function importNotifications(): Promise<void> {
 			return;
 		}
 
+		// Log for debugging
+		console.log('Importing notifications:', notifications.length);
+		console.log('First notification:', notifications[0]);
+		console.log('Last notification:', notifications[notifications.length - 1]);
+
 		// Import notifications
+		const importToast = toast.loading(`Importing ${notifications.length} notifications...`);
 		await NotificationReader.importNotifications({ notifications });
+		toast.dismiss(importToast);
+		
+		console.log('Import completed successfully');
 		toast.success(`Imported ${notifications.length} notifications`);
 	} catch (error: any) {
 		if (error.message !== 'File selection cancelled') {
