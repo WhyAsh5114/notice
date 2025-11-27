@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
@@ -26,12 +25,19 @@
 		);
 	}
 
-	$effect(() => {
-		page.url.searchParams;
-		notificationsState.notifications = undefined;
-		notificationsState.loaderState.reset();
-		notificationsState.loadInitial();
-	});
+	function isDuplicateNotification(index: number) {
+		if (!notificationsState.notifications || index === 0) return false;
+
+		const n1 = notificationsState.notifications[index];
+		const n2 = notificationsState.notifications[index - 1];
+
+		return (
+			n1.appName === n2.appName &&
+			n1.title === n2.title &&
+			n1.text === n2.text &&
+			n1.timestamp === n2.timestamp
+		);
+	}
 </script>
 
 <div class="flex gap-1">
@@ -53,36 +59,38 @@
 	>
 		<div class="flex flex-col gap-2 p-2">
 			{#each notificationsState.notifications as notification, index (index)}
-				{#if comparePreviousDate(index)}
-					<div class="py-1 text-lg font-medium">
-						{new Date(notification.timestamp).toLocaleDateString(undefined, {
-							dateStyle: 'long'
-						})}
-					</div>
-				{/if}
-				<Card.Root class="gap-2">
-					<Card.Header class="flex flex-row items-start gap-3">
-						<Avatar.Root class="rounded-md">
-							<Avatar.Image src={`data:image/png;base64,${notification.appIcon}`} />
-							<Avatar.Fallback>{notification.appName.charAt(0)}</Avatar.Fallback>
-						</Avatar.Root>
-						<div class="flex flex-col">
-							<Card.Title>{notification.appName}</Card.Title>
-							<Card.Description>{formatTimestamp(notification.timestamp)}</Card.Description>
+				{#if !isDuplicateNotification(index)}
+					{#if comparePreviousDate(index)}
+						<div class="py-1 text-lg font-medium">
+							{new Date(notification.timestamp).toLocaleDateString(undefined, {
+								dateStyle: 'long'
+							})}
 						</div>
-					</Card.Header>
-					<Card.Content>
-						<p class="text-sm">{notification.title}</p>
-						<p class="text-xs">{notification.text}</p>
-						{#if notification.style === NotificationStyle.BIG_PICTURE}
-							<img
-								src={`data:image/png;base64,${notification.bigPicture}`}
-								alt="Notification media"
-								class="mt-2"
-							/>
-						{/if}
-					</Card.Content>
-				</Card.Root>
+					{/if}
+					<Card.Root class="gap-2">
+						<Card.Header class="flex flex-row items-start gap-3">
+							<Avatar.Root class="rounded-md">
+								<Avatar.Image src={`data:image/png;base64,${notification.appIcon}`} />
+								<Avatar.Fallback>{notification.appName.charAt(0)}</Avatar.Fallback>
+							</Avatar.Root>
+							<div class="flex flex-col">
+								<Card.Title>{notification.appName}</Card.Title>
+								<Card.Description>{formatTimestamp(notification.timestamp)}</Card.Description>
+							</div>
+						</Card.Header>
+						<Card.Content>
+							<p class="text-sm">{notification.title}</p>
+							<p class="text-xs">{notification.text}</p>
+							{#if notification.style === NotificationStyle.BIG_PICTURE}
+								<img
+									src={`data:image/png;base64,${notification.bigPicture}`}
+									alt="Notification media"
+									class="mt-2"
+								/>
+							{/if}
+						</Card.Content>
+					</Card.Root>
+				{/if}
 			{:else}
 				{#if notificationsState.notifications === undefined}
 					<LoadingNotifications />

@@ -1,14 +1,107 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
+	import * as Command from '$lib/components/ui/command/index.js';
 	import * as InputGroup from '$lib/components/ui/input-group/index.js';
 	import Label from '$lib/components/ui/label/label.svelte';
+	import * as Popover from '$lib/components/ui/popover/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
-	import { FunnelPlusIcon, XIcon } from '@lucide/svelte';
-	import { NotificationCategory, NotificationStyle } from 'capacitor-notification-reader';
+	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
+	import { cn } from '$lib/utils';
+	import { CheckIcon, ChevronsUpDownIcon, FunnelPlusIcon, XIcon } from '@lucide/svelte';
+	import {
+		NotificationCategory,
+		NotificationReader,
+		NotificationStyle,
+		type InstalledApp
+	} from 'capacitor-notification-reader';
+	import { InfiniteLoader, LoaderState } from 'svelte-infinite';
 	import { notificationsState } from '../notifications-state.svelte';
 
 	let open = $state(false);
+
+	// App combobox state
+	let appsOpen = $state(false);
+	let appsTriggerRef = $state<HTMLButtonElement>(null!);
+	let installedApps = $state<InstalledApp[]>([]);
+	let appsLoading = $state(false);
+	let searchQuery = $state('');
+
+	// Infinite scroll state
+	const PAGE_SIZE = 25;
+	let loaderState = $state(new LoaderState());
+	let visibleCount = $state(PAGE_SIZE);
+	let commandListRef = $state<HTMLDivElement | null>(null);
+
+	// Filter apps based on search
+	const searchFilteredApps = $derived.by(() => {
+		if (!searchQuery.trim()) return installedApps;
+		const query = searchQuery.toLowerCase();
+		return installedApps.filter((app) => app.appName.toLowerCase().includes(query));
+	});
+
+	// Get visible apps (paginated)
+	const visibleApps = $derived(searchFilteredApps.slice(0, visibleCount));
+	const hasMoreApps = $derived(visibleCount < searchFilteredApps.length);
+
+	// Reset pagination when search changes
+	$effect(() => {
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		searchQuery; // track dependency
+		visibleCount = PAGE_SIZE;
+		loaderState.reset();
+	});
+
+	// Load more apps for infinite scroll
+	async function loadMoreApps() {
+		if (!hasMoreApps) {
+			loaderState.complete();
+			return;
+		}
+
+		// Small delay to prevent jarring
+		await new Promise((r) => setTimeout(r, 50));
+		visibleCount += PAGE_SIZE;
+
+		if (visibleCount >= searchFilteredApps.length) {
+			loaderState.complete();
+		} else {
+			loaderState.loaded();
+		}
+	}
+
+	// Load installed apps when the popover opens
+	async function loadInstalledApps() {
+		if (installedApps.length > 0) return;
+
+		appsLoading = true;
+		try {
+			const result = await NotificationReader.getInstalledApps();
+			installedApps = result.apps.sort((a, b) => a.appName.localeCompare(b.appName));
+		} catch {
+			// Fallback for web or errors - leave empty
+			installedApps = [];
+		} finally {
+			appsLoading = false;
+		}
+	}
+
+	// Toggle app selection
+	function toggleAppSelection(appName: string) {
+		const currentApps = notificationsState.filters.apps ?? [];
+		if (currentApps.includes(appName)) {
+			notificationsState.filters.apps = currentApps.filter((a) => a !== appName);
+			if (notificationsState.filters.apps.length === 0) {
+				notificationsState.filters.apps = undefined;
+			}
+		} else {
+			notificationsState.filters.apps = [...currentApps, appName];
+		}
+	}
+
+	function isAppSelected(appName: string): boolean {
+		return notificationsState.filters.apps?.includes(appName) ?? false;
+	}
 
 	// Convert enums to arrays for select options
 	const categoryOptions = Object.entries(NotificationCategory).map(([key, value]) => ({
@@ -73,34 +166,132 @@
 		<div class="grid grid-cols-2 items-end gap-x-2 gap-y-4 px-4">
 			<!-- App Names -->
 			<div class="col-span-full flex flex-col gap-2">
-				<Label for="app-names">App Names (comma-separated)</Label>
-				<InputGroup.Root>
-					<InputGroup.Input
-						id="app-names"
-						placeholder="WhatsApp, Gmail, Slack"
-						value={notificationsState.filters.apps?.join(', ') ?? ''}
-						oninput={(e) => {
-							const value = e.currentTarget.value.trim();
-							notificationsState.filters.apps = value
-								? value
-										.split(',')
-										.map((app) => app.trim())
-										.filter(Boolean)
-								: undefined;
-						}}
-					/>
-					{#if notificationsState.filters.apps && notificationsState.filters.apps.length > 0}
-						<InputGroup.Addon>
-							<button
-								onclick={() => (notificationsState.filters.apps = undefined)}
-								class="text-muted-foreground hover:text-foreground"
-								type="button"
+				<Label for="app-names">App Names</Label>
+				<Popover.Root bind:open={appsOpen} onOpenChange={(isOpen) => isOpen && loadInstalledApps()}>
+					<Popover.Trigger bind:ref={appsTriggerRef}>
+						{#snippet child({ props })}
+							<Button
+								variant="outline"
+								class="w-full justify-between"
+								{...props}
+								role="combobox"
+								aria-expanded={appsOpen}
 							>
-								<XIcon class="h-4 w-4" />
-							</button>
-						</InputGroup.Addon>
-					{/if}
-				</InputGroup.Root>
+								{#if notificationsState.filters.apps && notificationsState.filters.apps.length > 0}
+									<span class="flex items-center gap-1 truncate">
+										{notificationsState.filters.apps.slice(0, 3).join(', ')}
+										{#if notificationsState.filters.apps.length > 3}
+											<span class="text-muted-foreground">
+												+{notificationsState.filters.apps.length - 3} more
+											</span>
+										{/if}
+									</span>
+								{:else}
+									<span class="text-muted-foreground">Select apps...</span>
+								{/if}
+								<ChevronsUpDownIcon class="ms-2 size-4 shrink-0 opacity-50" />
+							</Button>
+						{/snippet}
+					</Popover.Trigger>
+					<Popover.Content class="w-(--bits-popover-anchor-width) p-0">
+						<Command.Root shouldFilter={false}>
+							<Command.Input placeholder="Search apps..." bind:value={searchQuery} />
+							<Command.List class="max-h-[300px]" bind:ref={commandListRef}>
+								{#if appsLoading}
+									<Command.Loading>
+										<div
+											class="flex items-center justify-center gap-2 p-2 text-xs text-muted-foreground"
+										>
+											<Spinner />
+											Loading apps <span class="italic">(this may take a while...)</span>
+										</div>
+									</Command.Loading>
+								{:else if searchFilteredApps.length === 0}
+									<Command.Empty
+										class="flex items-center justify-center gap-2 p-2 text-xs text-muted-foreground"
+									>
+										No apps found
+									</Command.Empty>
+								{:else}
+									<Command.Group>
+										<InfiniteLoader
+											{loaderState}
+											triggerLoad={loadMoreApps}
+											intersectionOptions={{
+												root: commandListRef,
+												rootMargin: '0px 0px 100px 0px'
+											}}
+										>
+											{#each visibleApps as app (app.packageName)}
+												<Command.Item
+													value={app.appName}
+													onSelect={() => {
+														toggleAppSelection(app.appName);
+													}}
+												>
+													<div class="flex items-center gap-2">
+														{#if app.appIcon}
+															<img
+																src={`data:image/png;base64,${app.appIcon}`}
+																alt=""
+																class="size-5 rounded"
+																loading="lazy"
+																decoding="async"
+															/>
+														{/if}
+														<span class="truncate">{app.appName}</span>
+													</div>
+													<CheckIcon
+														class={cn(
+															'me-2 size-4',
+															!isAppSelected(app.appName) && 'text-transparent'
+														)}
+													/>
+												</Command.Item>
+											{/each}
+											{#snippet loading()}
+												<div class="flex items-center justify-center p-2">
+													<Spinner class="size-4" />
+												</div>
+											{/snippet}
+											{#snippet noData()}
+												<!-- All apps loaded, nothing to show -->
+											{/snippet}
+											{#snippet noResults()}
+												<!-- No results message handled above -->
+											{/snippet}
+										</InfiniteLoader>
+									</Command.Group>
+								{/if}
+							</Command.List>
+						</Command.Root>
+					</Popover.Content>
+				</Popover.Root>
+				{#if notificationsState.filters.apps && notificationsState.filters.apps.length > 0}
+					<div class="flex flex-wrap gap-1">
+						{#each notificationsState.filters.apps as appName (appName)}
+							<span
+								class="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs text-secondary-foreground"
+							>
+								{appName}
+								<button
+									type="button"
+									class="hover:text-destructive"
+									onclick={() => toggleAppSelection(appName)}
+								>
+									<XIcon class="size-3" />
+								</button>
+							</span>
+						{/each}
+						<button
+							type="button"
+							class="text-xs text-muted-foreground underline hover:text-foreground"
+							onclick={() => (notificationsState.filters.apps = undefined)}
+						>
+							Clear all
+						</button>
+					</div>
+				{/if}
 			</div>
 
 			<!-- Title Search -->
@@ -167,7 +358,7 @@
 					</Select.Trigger>
 					<Select.Content>
 						<Select.Item value="">None</Select.Item>
-						{#each styleOptions as option}
+						{#each styleOptions as option (option.value)}
 							<Select.Item value={option.value}>{option.label}</Select.Item>
 						{/each}
 					</Select.Content>
@@ -192,7 +383,7 @@
 					</Select.Trigger>
 					<Select.Content>
 						<Select.Item value="">None</Select.Item>
-						{#each categoryOptions as option}
+						{#each categoryOptions as option (option.value)}
 							<Select.Item value={option.value}>{option.label}</Select.Item>
 						{/each}
 					</Select.Content>
@@ -218,7 +409,7 @@
 					</Select.Trigger>
 					<Select.Content>
 						<Select.Item value="">Any</Select.Item>
-						{#each booleanOptions as option}
+						{#each booleanOptions as option (option.value)}
 							<Select.Item value={option.value}>{option.label}</Select.Item>
 						{/each}
 					</Select.Content>
@@ -244,7 +435,7 @@
 					</Select.Trigger>
 					<Select.Content>
 						<Select.Item value="">Any</Select.Item>
-						{#each booleanOptions as option}
+						{#each booleanOptions as option (option.value)}
 							<Select.Item value={option.value}>{option.label}</Select.Item>
 						{/each}
 					</Select.Content>

@@ -35,7 +35,14 @@ class NotificationsState {
 			return;
 		}
 
-		// Initialize filters from URL params
+		const existingFiltersValue = window.localStorage.getItem('filters');
+		if (existingFiltersValue) {
+			this.filters = JSON.parse(existingFiltersValue) as NotificationFilters;
+			this.applyFilters();
+			return; // applyFilters will handle navigation and loading
+		}
+
+		// Initialize filters from URL params (only if no localStorage filters)
 		this.loadFiltersFromUrl();
 
 		this.loadInitial();
@@ -69,8 +76,12 @@ class NotificationsState {
 						? false
 						: undefined,
 			channelId: params.get('channelId') || undefined,
-			beforeTimestamp: params.get('beforeTimestamp') ? Number(params.get('beforeTimestamp')) : undefined,
-			afterTimestamp: params.get('afterTimestamp') ? Number(params.get('afterTimestamp')) : undefined
+			beforeTimestamp: params.get('beforeTimestamp')
+				? Number(params.get('beforeTimestamp'))
+				: undefined,
+			afterTimestamp: params.get('afterTimestamp')
+				? Number(params.get('afterTimestamp'))
+				: undefined
 		};
 	};
 
@@ -155,8 +166,7 @@ class NotificationsState {
 		return filter;
 	};
 
-	applyFilters = () => {
-		const url = new URL(window.location.href);
+	applyFilters = async () => {
 		const params = new URLSearchParams();
 
 		if (this.filters.apps && this.filters.apps.length > 0) {
@@ -204,12 +214,22 @@ class NotificationsState {
 		}
 
 		const queryString = params.toString();
-		goto(queryString ? `/?${queryString}` : '/');
+		window.localStorage.setItem('filters', JSON.stringify(this.filters));
+
+		await goto(queryString ? `/?${queryString}` : '/');
+		this.reloadNotificationsWithNewFilters();
 	};
 
-	clearFilters = () => {
+	reloadNotificationsWithNewFilters = () => {
+		this.notifications = undefined;
+		this.loaderState.reset();
+		this.loadInitial();
+	};
+
+	clearFilters = async () => {
 		this.filters = {};
 		goto('/');
+		this.reloadNotificationsWithNewFilters();
 	};
 }
 
