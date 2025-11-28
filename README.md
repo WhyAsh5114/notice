@@ -80,7 +80,7 @@ If you find Notice useful, consider supporting its development:
 - ☕ [Buy Me a Coffee](https://buymeacoffee.com/whyash5114)
 - ❤️ [Sponsor on GitHub](https://github.com/sponsors/whyash5114)
 - ⭐ [Star on GitHub](https://github.com/whyash5114/notice)
-- 📱 [Rate on Play Store](https://play.google.com/store/apps/details?id=com.notice.app)
+- 📱 [Rate on Play Store](https://play.google.com/store/apps/details?id=com.whyash5114.notice)
 
 Your support helps keep this project maintained and improved!
 

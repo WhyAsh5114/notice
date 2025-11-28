@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussions
+    url: https://github.com/whyash5114/notice/discussions
+    about: Have a question or want to discuss something? Start a discussion!
+  - name: 📖 Documentation
+    url: https://github.com/whyash5114/notice#readme
+    about: Check the README for documentation and setup instructions.
