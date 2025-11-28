@@ -4,10 +4,10 @@
 
 We release patches for security vulnerabilities in the following versions:
 
-| Version | Supported          |
-| ------- | ------------------ |
-| latest  | :white_check_mark: |
-| < latest| :x:                |
+| Version  | Supported          |
+| -------- | ------------------ |
+| latest   | :white_check_mark: |
+| < latest | :x:                |
 
 We recommend always using the latest version of Notice from the [Google Play Store](https://play.google.com/store/apps/details?id=com.whyash5114.notice) or building from the latest source.
 
@@ -86,12 +86,14 @@ If you're contributing to Notice:
 ## Third-Party Dependencies
 
 We regularly audit our dependencies for security vulnerabilities using:
+
 - GitHub Dependabot alerts
 - npm/pnpm audit
 
 ## Contact
 
 For security concerns, you can also reach out through:
+
 - [GitHub Security Advisories](https://github.com/whyash5114/notice/security/advisories)
 - Opening a private security report on GitHub
 

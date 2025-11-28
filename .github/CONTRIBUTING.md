@@ -43,35 +43,38 @@ By participating in this project, you agree to maintain a welcoming and inclusiv
 ### Installation
 
 1. Install dependencies:
+
    ```sh
    pnpm install
    ```
 
 2. Start the development server:
+
    ```sh
    pnpm dev
    ```
 
 3. For Android development:
+
    ```sh
    # Build and sync with Capacitor
    pnpm build
    pnpm prepare
-   
+
    # Open in Android Studio
    npx cap open android
    ```
 
 ### Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start development server |
-| `pnpm build` | Create production build |
-| `pnpm preview` | Preview production build |
-| `pnpm check` | Run TypeScript type checking |
-| `pnpm lint` | Run ESLint and Prettier checks |
-| `pnpm format` | Format code with Prettier |
+| Command        | Description                    |
+| -------------- | ------------------------------ |
+| `pnpm dev`     | Start development server       |
+| `pnpm build`   | Create production build        |
+| `pnpm preview` | Preview production build       |
+| `pnpm check`   | Run TypeScript type checking   |
+| `pnpm lint`    | Run ESLint and Prettier checks |
+| `pnpm format`  | Format code with Prettier      |
 
 ## How to Contribute
 
@@ -91,6 +94,7 @@ By participating in this project, you agree to maintain a welcoming and inclusiv
 ### Submitting Code
 
 1. Create a new branch for your feature/fix:
+
    ```sh
    git checkout -b feature/your-feature-name
    # or
@@ -100,6 +104,7 @@ By participating in this project, you agree to maintain a welcoming and inclusiv
 2. Make your changes and commit them (see [Commit Messages](#commit-messages))
 
 3. Push to your fork:
+
    ```sh
    git push origin feature/your-feature-name
    ```
@@ -126,6 +131,7 @@ By participating in this project, you agree to maintain a welcoming and inclusiv
 - Add dependencies that phone home
 
 If your feature requires network access, it must be:
+
 1. Clearly opt-in
 2. Documented in the PR
 3. Discussed with maintainers first
@@ -220,6 +226,7 @@ chore(deps): update svelte to v5.45
 ## Questions?
 
 Feel free to:
+
 - Open a [Discussion](https://github.com/whyash5114/notice/discussions)
 - Ask questions in your PR or issue
 

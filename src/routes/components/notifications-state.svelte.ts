@@ -1,14 +1,17 @@
 import { goto } from '$app/navigation';
+import { resolve } from '$app/paths';
 import { page } from '$app/state';
 import { Capacitor } from '@capacitor/core';
 import {
 	NotificationCategory,
 	NotificationReader,
 	NotificationStyle,
+	type NotificationFilter,
 	type NotificationItem
 } from 'capacitor-notification-reader';
 import { untrack } from 'svelte';
 import { LoaderState } from 'svelte-infinite';
+import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 export const LOAD_LIMIT = 50;
 export type NotificationFilters = {
@@ -127,7 +130,7 @@ class NotificationsState {
 	};
 
 	buildFilterObject = () => {
-		const filter: any = {};
+		const filter: NotificationFilter = {};
 
 		if (this.filters.searchText) {
 			filter.textContainsInsensitive = this.filters.searchText;
@@ -167,7 +170,7 @@ class NotificationsState {
 	};
 
 	applyFilters = async () => {
-		const params = new URLSearchParams();
+		const params = new SvelteURLSearchParams();
 
 		if (this.filters.apps && this.filters.apps.length > 0) {
 			params.set('apps', this.filters.apps.join(','));
@@ -216,6 +219,7 @@ class NotificationsState {
 		const queryString = params.toString();
 		window.localStorage.setItem('filters', JSON.stringify(this.filters));
 
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
 		await goto(queryString ? `/?${queryString}` : '/');
 		this.reloadNotificationsWithNewFilters();
 	};
@@ -228,7 +232,7 @@ class NotificationsState {
 
 	clearFilters = async () => {
 		this.filters = {};
-		goto('/');
+		goto(resolve('/'));
 		this.reloadNotificationsWithNewFilters();
 	};
 }

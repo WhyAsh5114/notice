@@ -37,22 +37,26 @@ Existing notification management solutions are often filled with ads or don't wo
 ### Getting Started
 
 1. Clone the repository:
+
 ```sh
 git clone https://github.com/whyash5114/notice.git
 cd notice
 ```
 
 2. Install dependencies:
+
 ```sh
 pnpm install
 ```
 
 3. Start the development server:
+
 ```sh
 pnpm dev
 ```
 
 4. Open the app in your browser or run on Android:
+
 ```sh
 # Sync with Capacitor
 pnpm prepare
@@ -87,12 +91,13 @@ Your support helps keep this project maintained and improved!
 ## Privacy
 
 Notice respects your privacy:
+
 - No internet connection required
 - No data collection or analytics
 - No third-party tracking
 - Your notifications stay on your device
 
-*Note: Optional cloud syncing/backup features may be added in the future, but will always be opt-in.*
+_Note: Optional cloud syncing/backup features may be added in the future, but will always be opt-in._
 
 ## License
 

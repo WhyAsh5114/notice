@@ -14,6 +14,7 @@ Before seeking support, please check:
 If you've found a bug, please [open an issue](https://github.com/whyash5114/notice/issues/new?template=bug_report.yml) using the bug report template.
 
 **Before opening a new issue:**
+
 1. Search [existing issues](https://github.com/whyash5114/notice/issues) to avoid duplicates
 2. Make sure you're using the latest version
 3. Include your Android version and device model

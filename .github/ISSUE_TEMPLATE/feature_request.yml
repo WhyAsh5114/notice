@@ -1,7 +1,7 @@
 name: ✨ Feature Request
 description: Suggest an idea or enhancement for Notice
-title: "[Feature]: "
-labels: ["enhancement"]
+title: '[Feature]: '
+labels: ['enhancement']
 body:
   - type: markdown
     attributes:
@@ -48,9 +48,9 @@ body:
       label: Privacy Impact
       description: Does this feature require any data collection, network access, or third-party services?
       options:
-        - "No - Fully offline, no data collection"
-        - "Optional - User can opt-in"
-        - "Yes - Requires network/data access"
+        - 'No - Fully offline, no data collection'
+        - 'Optional - User can opt-in'
+        - 'Yes - Requires network/data access'
     validations:
       required: true
 

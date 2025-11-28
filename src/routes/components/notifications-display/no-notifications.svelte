@@ -3,7 +3,7 @@
 	import { BellDotIcon } from '@lucide/svelte';
 </script>
 
-<Empty.Root class="w-full h-full">
+<Empty.Root class="h-full w-full">
 	<Empty.Header>
 		<Empty.Media variant="icon">
 			<BellDotIcon />

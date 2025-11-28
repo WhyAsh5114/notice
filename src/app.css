@@ -136,9 +136,17 @@
 	--color-sidebar-ring: var(--sidebar-ring);
 }
 
+@font-face {
+	font-family: 'Inter';
+	font-style: normal;
+	font-display: swap;
+	src: url('/fonts/Inter-VariableFont_opsz,wght.ttf') format('truetype');
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;
+		font-family: 'Inter';
 	}
 	body {
 		@apply bg-background text-foreground;

@@ -9,9 +9,11 @@ import ts from 'typescript-eslint';
 import svelteConfig from './svelte.config.js';
 
 const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
+const prettierignorePath = fileURLToPath(new URL('./.prettierignore', import.meta.url));
 
 export default defineConfig(
 	includeIgnoreFile(gitignorePath),
+	includeIgnoreFile(prettierignorePath),
 	js.configs.recommended,
 	...ts.configs.recommended,
 	...svelte.configs.recommended,

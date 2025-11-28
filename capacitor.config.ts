@@ -8,7 +8,7 @@ const config: CapacitorConfig = {
 		StatusBar: {
 			overlaysWebView: false
 		}
-	},
+	}
 	// * For development purposes only
 	// server: {
 	// 	url: 'http://localhost:5173',

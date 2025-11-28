@@ -1,5 +1,9 @@
 import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
-import { type NotificationItem, NotificationReader } from 'capacitor-notification-reader';
+import {
+	type BigPictureNotification,
+	type NotificationItem,
+	NotificationReader
+} from 'capacitor-notification-reader';
 import { formatHex } from 'culori';
 import Papa from 'papaparse';
 import { toast } from 'svelte-sonner';
@@ -47,7 +51,7 @@ function notificationToCSVRow(notification: NotificationItem): string {
 		escape(notification.appIcon),
 		escape(notification.smallIcon),
 		escape(notification.largeIcon),
-		escape((notification as any).bigPicture)
+		escape((notification as BigPictureNotification).bigPicture)
 	].join(',');
 }
 
@@ -187,7 +191,7 @@ export async function importNotifications(): Promise<void> {
 						text: values[4] || undefined,
 						timestamp: parseInt(values[5]),
 						category: values[6] || undefined,
-						style: values[7] as any,
+						style: values[7],
 						subText: values[8] || undefined,
 						infoText: values[9] || undefined,
 						summaryText: values[10] || undefined,
@@ -228,8 +232,8 @@ export async function importNotifications(): Promise<void> {
 		toast.dismiss(importToast);
 
 		toast.success(`Imported ${notifications.length} notifications`);
-	} catch (error: any) {
-		if (error.message !== 'File selection cancelled') {
+	} catch (error) {
+		if (error instanceof Error && error.message !== 'File selection cancelled') {
 			toast.error('Failed to import notifications');
 			console.error(error);
 			throw error;

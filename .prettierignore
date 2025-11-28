@@ -7,3 +7,9 @@ bun.lockb
 
 # Miscellaneous
 /static/
+
+# Android
+android
+
+# shadcn-svelte components
+src/lib/components/ui
