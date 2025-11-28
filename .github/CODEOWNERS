@@ -1,0 +1,9 @@
+# Code Owners for Notice
+# These owners will be requested for review when someone opens a pull request.
+
+# Global owners - will be requested for review on all PRs
+* @whyash5114
+
+# Specific paths can have different owners
+# /android/ @android-expert
+# /src/lib/components/ @ui-team
