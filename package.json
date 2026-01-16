@@ -56,9 +56,10 @@
 		"@capacitor/filesystem": "^7.1.5",
 		"@capacitor/share": "^7.0.2",
 		"@capacitor/status-bar": "^7.0.3",
-		"capacitor-notification-reader": "^1.1.0",
+		"capacitor-notification-reader": "1.2.0",
 		"culori": "^4.0.2",
 		"papaparse": "^5.5.3",
+		"runed": "0.37.1",
 		"svelte-infinite": "^0.5.1"
 	}
 }

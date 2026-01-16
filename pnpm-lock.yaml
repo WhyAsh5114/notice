@@ -24,14 +24,17 @@ importers:
         specifier: ^7.0.3
         version: 7.0.3(@capacitor/core@7.4.4)
       capacitor-notification-reader:
-        specifier: ^1.1.0
-        version: 1.1.0(@capacitor/core@7.4.4)
+        specifier: 1.2.0
+        version: 1.2.0(@capacitor/core@7.4.4)
       culori:
         specifier: ^4.0.2
         version: 4.0.2
       papaparse:
         specifier: ^5.5.3
         version: 5.5.3
+      runed:
+        specifier: 0.37.1
+        version: 0.37.1(@sveltejs/kit@2.49.0(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@7.2.4(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)))(svelte@5.45.2)(vite@7.2.4(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)))(svelte@5.45.2)
       svelte-infinite:
         specifier: ^0.5.1
         version: 0.5.1(svelte@5.45.2)
@@ -1093,8 +1096,8 @@ packages:
     resolution: {integrity: sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==}
     engines: {node: '>=6'}
 
-  capacitor-notification-reader@1.1.0:
-    resolution: {integrity: sha512-Wd377777LT2UDvkHN0aZckolVMtrxuJwl9F/ZBgCA1FPP+0m5Nz7iX6IW63GxtWiyIO3gOZmdQGDOAGIeQeeDw==}
+  capacitor-notification-reader@1.2.0:
+    resolution: {integrity: sha512-+uyxYMUwtBSvO01RkXXzCFEkz0r0n2oYhkUXRB8yVEtUkZRLUooI1m8/EIyT/SmJtX5c9mbLWzk6M60nMhFeHA==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       '@capacitor/core': '>=7.0.0'
@@ -2513,6 +2516,18 @@ packages:
       svelte: ^5.7.0
     peerDependenciesMeta:
       '@sveltejs/kit':
+        optional: true
+
+  runed@0.37.1:
+    resolution: {integrity: sha512-MeFY73xBW8IueWBm012nNFIGy19WUGPLtknavyUPMpnyt350M47PhGSGrGoSLbidwn+Zlt/O0cp8/OZE3LASWA==}
+    peerDependencies:
+      '@sveltejs/kit': ^2.21.0
+      svelte: ^5.7.0
+      zod: ^4.1.0
+    peerDependenciesMeta:
+      '@sveltejs/kit':
+        optional: true
+      zod:
         optional: true
 
   sade@1.8.1:
@@ -4063,7 +4078,7 @@ snapshots:
 
   camelcase@5.3.1: {}
 
-  capacitor-notification-reader@1.1.0(@capacitor/core@7.4.4):
+  capacitor-notification-reader@1.2.0(@capacitor/core@7.4.4):
     dependencies:
       '@capacitor/core': 7.4.4
 
@@ -5436,6 +5451,15 @@ snapshots:
       svelte: 5.45.2
 
   runed@0.35.1(@sveltejs/kit@2.49.0(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@7.2.4(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)))(svelte@5.45.2)(vite@7.2.4(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)))(svelte@5.45.2):
+    dependencies:
+      dequal: 2.0.3
+      esm-env: 1.2.2
+      lz-string: 1.5.0
+      svelte: 5.45.2
+    optionalDependencies:
+      '@sveltejs/kit': 2.49.0(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@7.2.4(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)))(svelte@5.45.2)(vite@7.2.4(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2))
+
+  runed@0.37.1(@sveltejs/kit@2.49.0(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.45.2)(vite@7.2.4(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)))(svelte@5.45.2)(vite@7.2.4(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)))(svelte@5.45.2):
     dependencies:
       dequal: 2.0.3
       esm-env: 1.2.2
