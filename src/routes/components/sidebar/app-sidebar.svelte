@@ -12,7 +12,9 @@
 		GlobeLockIcon,
 		HandCoinsIcon,
 		PlayIcon,
-		SettingsIcon
+		SunMoonIcon,
+		FileInputIcon,
+		DatabaseIcon
 	} from '@lucide/svelte';
 	import type { Component, ComponentProps } from 'svelte';
 
@@ -21,7 +23,7 @@
 
 	type InternalNavLink = {
 		title: string;
-		url: '/' | '/settings' | '/donate';
+		url: '/' | '/donate' | '/import-export' | '/storage' | '/theme';
 		icon: Component<IconProps>;
 		external?: false;
 	};
@@ -51,14 +53,29 @@
 						icon: BellIcon
 					},
 					{
-						title: 'Settings',
-						url: '/settings',
-						icon: SettingsIcon
-					},
-					{
 						title: 'Donate',
 						url: '/donate',
 						icon: HandCoinsIcon
+					}
+				]
+			},
+			{
+				title: 'Settings',
+				items: [
+					{
+						title: 'Import/Export',
+						url: '/import-export',
+						icon: FileInputIcon
+					},
+					{
+						title: 'Storage',
+						url: '/storage',
+						icon: DatabaseIcon
+					},
+					{
+						title: 'Theme',
+						url: '/theme',
+						icon: SunMoonIcon
 					}
 				]
 			},
@@ -135,7 +152,9 @@
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton
 									onclick={() => sidebar.setOpenMobile(false)}
-									isActive={page.url.pathname === link.url}
+									isActive={!isExternal(link) &&
+										(page.url.pathname === link.url ||
+											page.url.pathname.startsWith(link.url + '/'))}
 								>
 									{#snippet child({ props })}
 										{#if isExternal(link)}
