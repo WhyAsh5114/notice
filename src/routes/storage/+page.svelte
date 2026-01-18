@@ -159,7 +159,7 @@
 				<Spinner class="size-6" />
 			</div>
 		{:else}
-			<div class="flex items-center justify-between rounded-md border p-4 gap-2">
+			<div class="flex items-center justify-between gap-2 rounded-md border p-4">
 				<div class="flex flex-col gap-1">
 					<label for="filter-ongoing" class="text-sm leading-none font-medium">
 						Exclude ongoing notifications
@@ -191,7 +191,7 @@
 				<Spinner class="size-6" />
 			</div>
 		{:else}
-			<div class="flex items-center justify-between rounded-md border p-4 gap-2">
+			<div class="flex items-center justify-between gap-2 rounded-md border p-4">
 				<div class="flex flex-col gap-1">
 					<label for="filter-transport" class="text-sm leading-none font-medium">
 						Exclude transport notifications
